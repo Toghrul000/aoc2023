@@ -70,39 +70,39 @@ fn part1() {
 }
 
 
-fn apply_range(map: Vec<(i64, i64, i64)>,  mut R: Vec<(i64, i64)>) -> Vec<(i64, i64)> {
-    let mut A: Vec<(i64, i64)> = Vec::new();
+fn apply_range(map: Vec<(i64, i64, i64)>,  mut r: Vec<(i64, i64)>) -> Vec<(i64, i64)> {
+    let mut a: Vec<(i64, i64)> = Vec::new();
     for (src, dest, range_length) in map {
         let src_end = src + range_length;
-        let mut NR: Vec<(i64, i64)> = Vec::new();
+        let mut nr: Vec<(i64, i64)> = Vec::new();
 
-        while R.len() != 0 {
+        while r.len() != 0 {
             // [start_seed                                     end_seed)
             //                 [src       src_end]
             // [BEFORE        ][INTER            ][AFTER        )
-            let (start_seed, end_seed) = R.pop().unwrap();
+            let (start_seed, end_seed) = r.pop().unwrap();
             let before: (i64, i64) = (start_seed, min(end_seed,src));
             let inter: (i64, i64) = (max(start_seed, src), min(src_end, end_seed));
             let after: (i64, i64) = (max(src_end, start_seed), end_seed);
 
             if before.1 > before.0{
-                NR.push(before);
+                nr.push(before);
             }
             if inter.1 > inter.0 {
-                A.push((inter.0-src+dest, inter.1-src+dest));
+                a.push((inter.0-src+dest, inter.1-src+dest));
             }
 
             if after.1 > after.0 {
-                NR.push(after);
+                nr.push(after);
 
             }    
         }
-        R = NR.clone();
+        r = nr.clone();
         
         
     }
-    A.extend(R.clone());
-    A
+    a.extend(r.clone());
+    a
     
     
 }
@@ -147,12 +147,12 @@ fn main() {
 
     let mut locations: Vec<i64> = Vec::new();
     for i in (0..seeds.len()).step_by(2) {
-        let mut R: Vec<(i64, i64)> = vec![(seeds[i], seeds[i] + seeds[i+1])];
+        let mut r: Vec<(i64, i64)> = vec![(seeds[i], seeds[i] + seeds[i+1])];
 
         for key in &seeds_maps_names {
-            R = apply_range(almanac.get(key).unwrap().clone(), R);
+            r = apply_range(almanac.get(key).unwrap().clone(), r);
         }
-        locations.push(R.iter().min().unwrap().0)
+        locations.push(r.iter().min().unwrap().0)
     }
 
 
