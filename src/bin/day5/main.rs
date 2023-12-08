@@ -1,3 +1,4 @@
+use std::cmp::{min, max};
 use std::fs::File;
 use std::io::{self, BufRead};
 use std::path::Path;
@@ -68,6 +69,44 @@ fn part1() {
 
 }
 
+
+fn apply_range(map: Vec<(i64, i64, i64)>,  mut R: Vec<(i64, i64)>) -> Vec<(i64, i64)> {
+    let mut A: Vec<(i64, i64)> = Vec::new();
+    for (src, dest, range_length) in map {
+        let src_end = src + range_length;
+        let mut NR: Vec<(i64, i64)> = Vec::new();
+
+        while R.len() != 0 {
+            // [start_seed                                     end_seed)
+            //                 [src       src_end]
+            // [BEFORE        ][INTER            ][AFTER        )
+            let (start_seed, end_seed) = R.pop().unwrap();
+            let before: (i64, i64) = (start_seed, min(end_seed,src));
+            let inter: (i64, i64) = (max(start_seed, src), min(src_end, end_seed));
+            let after: (i64, i64) = (max(src_end, start_seed), end_seed);
+
+            if before.1 > before.0{
+                NR.push(before);
+            }
+            if inter.1 > inter.0 {
+                A.push((inter.0-src+dest, inter.1-src+dest));
+            }
+
+            if after.1 > after.0 {
+                NR.push(after);
+
+            }    
+        }
+        R = NR.clone();
+        
+        
+    }
+    A.extend(R.clone());
+    A
+    
+    
+}
+
 #[allow(unused)]
 fn main() {
     let mut seeds: Vec<i64> = Vec::new();
@@ -105,98 +144,44 @@ fn main() {
         }
 
     }
-    let mut locations: Vec<i64> = Vec::new();
-        // Iterate over pairs of values
-    // for chunk in seeds.chunks_exact(2) {
-    //     if let [start, length] = chunk {
-    //         let start = *start;
-    //         let length = *length;
 
-    //         // Iterate over the range defined by the pair
-    //         for seed in start..start + length {
-    //             let mut lookup = seed;
-    //             for key in &seeds_maps_names {
-    //                 for pairs in almanac.get(key).unwrap(){
-    //                     if lookup >= pairs.0 && lookup < pairs.0 + pairs.2 {
-    //                         let diff = pairs.1 - pairs.0;
-    //                         lookup = lookup + diff;
-    //                         break;
-    //                     }
+    let mut locations: Vec<i64> = Vec::new();
+    for i in (0..seeds.len()).step_by(2) {
+        let mut R: Vec<(i64, i64)> = vec![(seeds[i], seeds[i] + seeds[i+1])];
+
+        for key in &seeds_maps_names {
+            R = apply_range(almanac.get(key).unwrap().clone(), R);
+        }
+        locations.push(R.iter().min().unwrap().0)
+    }
+
+
+    ////Brute force solution
+    // let mut locations: Vec<i64> = Vec::new();
+    // for i in (0..seeds.len()).step_by(2) {
+    //     for seed in seeds[i]..seeds[i+1] {
+    //         println!("{}", i);
+    //         let mut lookup = seed;
+    //         println!("{}", seed);
+    //         for key in &seeds_maps_names {
+    //             for pairs in almanac.get(key).unwrap(){
+    //                 if lookup >= pairs.0 && lookup < pairs.0 + pairs.2 {
+    //                     let diff = pairs.1 - pairs.0;
+    //                     lookup = lookup + diff;
+    //                     break;
     //                 }
     //             }
-    //             locations.push(lookup);
-                
     //         }
+    //         locations.push(lookup);
+
     //     }
     // }
 
-    for i in (0..seeds.len()).step_by(2) {
-        //lowest seeds[i]
-        //highest seeds[i] + (seeds[i+1] - 1)
-        let arr = [seeds[i], seeds[i] + (seeds[i+1] - 1)];
-
-        let mut temp_vec: Vec<i64> = Vec::new();
-        for seed in arr {
-            let mut lookup = seed;
-            //println!("{}", seed);
-            for key in &seeds_maps_names {
-                for pairs in almanac.get(key).unwrap(){
-                    if lookup >= pairs.0 && lookup < pairs.0 + pairs.2 {
-                        let diff = pairs.1 - pairs.0;
-                        lookup = lookup + diff;
-                        break;
-                    }
-                }
-            }
-            temp_vec.push(lookup);
-
-        }
-
-        println!("[{}, {}] -> {:?}", arr[0], arr[1], temp_vec);
-
-
-        
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        // for seed in seeds[i]..seeds[i+1] {
-        //     println!("{}", i);
-        //     let mut lookup = seed;
-        //     println!("{}", seed);
-        //     for key in &seeds_maps_names {
-        //         for pairs in almanac.get(key).unwrap(){
-        //             if lookup >= pairs.0 && lookup < pairs.0 + pairs.2 {
-        //                 let diff = pairs.1 - pairs.0;
-        //                 lookup = lookup + diff;
-        //                 break;
-        //             }
-        //         }
-        //     }
-        //     locations.push(lookup);
-
-        // }
-    }
-
-    //println!("{:?}", almanac);
     if let Some(min_value) = locations.iter().min() {
         println!("The minimum value is: {}", min_value);
     } else {
         println!("The vector is empty");
     }
-
-
 
 }
 
